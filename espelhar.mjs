@@ -725,6 +725,7 @@ function chunk(text) {
   if (rest) parts.push(rest);
   return parts;
 }
+var DEFAULT_AFTER_ID = "1571691260962406400";
 async function syncAnnouncements({ token: token2, guildId, dryRun, redo, signal, log = (s) => console.error(s) }) {
   const lines = [];
   const say = (s) => {
@@ -739,7 +740,8 @@ async function syncAnnouncements({ token: token2, guildId, dryRun, redo, signal,
     channel: process.env[`${lang.toUpperCase()}_ANNOUNCEMENTS_ID`] ? channels.find((c) => c.id === process.env[`${lang.toUpperCase()}_ANNOUNCEMENTS_ID`]) : findAnnouncements(channels, lang)
   }));
   for (const d of dests) if (!d.channel) throw new Error(`N\xE3o achei o canal de an\xFAncios em ${d.lang === "en" ? "ingl\xEAs" : "espanhol"}. Rode 'node dist/cli.js layout --apply' antes.`);
-  const originals = (await fetchAll(token2, src.id, signal)).filter((m) => m.content.trim() || m.attachments?.length);
+  const floor = BigInt(process.env.ANNOUNCEMENTS_AFTER_ID ?? DEFAULT_AFTER_ID);
+  const originals = (await fetchAll(token2, src.id, signal)).filter((m) => (m.content.trim() || m.attachments?.length) && BigInt(m.id) > floor);
   say(`Canal de origem: ${src.name} \u2014 ${originals.length} mensagens`);
   let copied = 0;
   const me = redo ? await discord("GET", "/users/@me", { token: token2, signal }) : void 0;
